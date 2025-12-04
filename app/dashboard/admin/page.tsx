@@ -1,9 +1,11 @@
 
 "use client";
 
+import { useState } from "react";
 import { Plus } from "lucide-react";
 import { AdminShell } from "@/components/admin/AdminShell";
 import { SectionHeader } from "@/components/admin/SectionHeader";
+import { StudentModal } from "@/components/admin/StudentModal";
 import { StudentTable, type Student } from "@/components/admin/StudentTable";
 
 const mockStudents: Student[] = [
@@ -15,13 +17,25 @@ const mockStudents: Student[] = [
 ];
 
 export default function AdminStudentsPage() {
+  const [students, setStudents] = useState<Student[]>(mockStudents);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const handleAddStudent = (data: { name: string; email: string; className: string }) => {
+    const newStudent: Student = { ...data, courseCount: 0 };
+    setStudents((prev) => [...prev, newStudent]);
+  };
+
   return (
     <AdminShell activeSection="students">
       <SectionHeader
         title="Öğrenci Yönetimi"
         subtitle="Öğrencileri görüntüle ve yönet"
         action={
-          <button className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2196F3] text-white text-sm font-medium hover:bg-[#1976D2] transition-colors">
+          <button
+            type="button"
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2196F3] text-white text-sm font-medium hover:bg-[#1976D2] transition-colors"
+          >
             <Plus size={18} />
             Öğrenci Ekle
           </button>
@@ -29,9 +43,15 @@ export default function AdminStudentsPage() {
       />
 
       <StudentTable
-        students={mockStudents}
+        students={students}
         onEdit={(student) => console.log("edit", student)}
         onDelete={(student) => console.log("delete", student)}
+      />
+
+      <StudentModal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSubmit={handleAddStudent}
       />
     </AdminShell>
   );
