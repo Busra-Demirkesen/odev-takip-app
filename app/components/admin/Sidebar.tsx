@@ -32,7 +32,7 @@ type SidebarProps = {
 };
 
 export function Sidebar({
-  fallbackActiveHref = "/dashboard/admin/students",
+  fallbackActiveHref = "/dashboard/admin",
   className,
   onNavigate,
 }: SidebarProps) {
