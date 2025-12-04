@@ -1,7 +1,9 @@
-// components/auth/LoginForm.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/lib/firebase";
+
 import type { UserRole } from "@/types/auth";
 import { TextField } from "@/components/ui/TextField";
 import { PasswordField } from "@/components/ui/PasswordField";
@@ -51,26 +53,45 @@ export function LoginForm({ onLogin }: LoginFormProps) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
 
-    const { role, userId } = getRoleAndUserId(email);
+    const normalizedEmail = email.trim().toLowerCase();
 
-    if (!role) {
-      setError(
-        "Geçersiz e-posta adresi. Lütfen @admin.com, @ogretmen.com veya @ogrenci.com uzantılı bir e-posta kullanın."
-      );
-      return;
+    try {
+      // Firebase ile giriş yap
+      const cred = await signInWithEmailAndPassword(auth, normalizedEmail, password);
+
+      // Rol + userId email uzantısına göre
+      const { role, userId } = getRoleAndUserId(normalizedEmail);
+
+      if (!role) {
+        setError(
+          "Geçersiz e-posta adresi. Lütfen @admin.com, @ogretmen.com veya @ogrenci.com kullanın."
+        );
+        return;
+      }
+
+      onLogin(role, userId, normalizedEmail);
+      console.log("Firebase -> UID:", cred.user.uid);
+    } catch (err: any) {
+      const message =
+        err?.code === "auth/user-not-found"
+          ? "Böyle bir kullanıcı bulunamadı."
+          : err?.code === "auth/wrong-password"
+          ? "Şifre hatalı."
+          : err?.code === "auth/invalid-email"
+          ? "Geçersiz e-posta adresi."
+          : "Giriş yaparken hata oluştu.";
+
+      setError(message);
+    } finally {
+      setIsLoading(false);
     }
-
-    if (password.length < 4) {
-      setError("Şifre en az 4 karakter olmalıdır.");
-      return;
-    }
-
-    onLogin(role, userId, email);
   };
 
   return (
@@ -117,9 +138,10 @@ export function LoginForm({ onLogin }: LoginFormProps) {
 
         <button
           type="submit"
-          className="w-full py-3 bg-[#2196F3] text-white rounded-lg hover:bg-[#1976D2] transition-colors shadow-md"
+          disabled={isLoading}
+          className="w-full py-3 bg-[#2196F3] text-white rounded-lg hover:bg-[#1976D2] transition-colors shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
         >
-          Giriş Yap
+          {isLoading ? "Giriş yapılıyor..." : "Giriş Yap"}
         </button>
       </form>
 
