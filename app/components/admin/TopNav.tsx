@@ -2,6 +2,7 @@
 
 type TopNavProps = {
   activeKey?: "dashboard" | "classes" | "students" | "teachers";
+  className?: string;
 };
 
 const TABS = [
@@ -11,9 +12,11 @@ const TABS = [
   { key: "teachers" as const, label: "Öğretmenler" },
 ];
 
-export function TopNav({ activeKey = "dashboard" }: TopNavProps) {
+export function TopNav({ activeKey = "dashboard", className }: TopNavProps) {
   return (
-    <div className="bg-white border-b border-gray-200">
+    <div
+      className={`bg-white border-b border-gray-200 ${className ? className : ""}`}
+    >
       <div className="px-8">
         <nav className="flex items-center gap-8">
           {TABS.map((tab) => {

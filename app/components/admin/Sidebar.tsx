@@ -1,5 +1,6 @@
 "use client";
 
+import type React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -26,14 +27,24 @@ const NAV_ITEMS: NavItem[] = [
 
 type SidebarProps = {
   fallbackActiveHref?: string;
+  className?: string;
+  onNavigate?: () => void;
 };
 
-export function Sidebar({ fallbackActiveHref = "/dashboard/admin/students" }: SidebarProps) {
+export function Sidebar({
+  fallbackActiveHref = "/dashboard/admin/students",
+  className,
+  onNavigate,
+}: SidebarProps) {
   const pathname = usePathname();
   const isRoot = pathname === "/dashboard/admin";
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 flex flex-col">
+    <aside
+      className={`w-64 bg-white border-r border-gray-200 flex flex-col ${
+        className ? className : ""
+      }`}
+    >
       <div className="px-6 py-6 flex items-center gap-3">
         <div className="h-12 w-12 rounded-2xl bg-[#2196F3] text-white flex items-center justify-center text-xl font-semibold">
           HB
@@ -54,6 +65,7 @@ export function Sidebar({ fallbackActiveHref = "/dashboard/admin/students" }: Si
             <Link
               key={item.href}
               href={item.href}
+              onClick={onNavigate}
               className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-colors ${
                 isActive
                   ? "bg-[#2196F3] text-white shadow-sm"
@@ -68,11 +80,17 @@ export function Sidebar({ fallbackActiveHref = "/dashboard/admin/students" }: Si
       </nav>
 
       <div className="px-3 pb-6 space-y-2">
-        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors">
+        <button
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-700 hover:bg-gray-100 transition-colors"
+          onClick={onNavigate}
+        >
           <Settings size={20} />
           <span className="text-sm font-medium">Ayarlar</span>
         </button>
-        <button className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors">
+        <button
+          className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-red-600 hover:bg-red-50 transition-colors"
+          onClick={onNavigate}
+        >
           <LogOut size={20} />
           <span className="text-sm font-medium">Çıkış Yap</span>
         </button>
