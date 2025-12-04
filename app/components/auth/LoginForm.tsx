@@ -78,13 +78,14 @@ export function LoginForm({ onLogin }: LoginFormProps) {
 
       onLogin(role, userId, normalizedEmail);
       console.log("Firebase -> UID:", cred.user.uid);
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const errorCode = (err as { code?: string })?.code;
       const message =
-        err?.code === "auth/user-not-found"
+        errorCode === "auth/user-not-found"
           ? "Böyle bir kullanıcı bulunamadı."
-          : err?.code === "auth/wrong-password"
+          : errorCode === "auth/wrong-password"
           ? "Şifre hatalı."
-          : err?.code === "auth/invalid-email"
+          : errorCode === "auth/invalid-email"
           ? "Geçersiz e-posta adresi."
           : "Giriş yaparken hata oluştu.";
 
@@ -149,3 +150,4 @@ export function LoginForm({ onLogin }: LoginFormProps) {
     </div>
   );
 }
+
