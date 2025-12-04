@@ -1,4 +1,4 @@
-// app/dashboard/admin/page.tsx
+
 "use client";
 
 import { Plus } from "lucide-react";
