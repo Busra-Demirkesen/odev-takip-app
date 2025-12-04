@@ -3,22 +3,40 @@
 import { useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 
+type TeacherFormData = {
+  name: string;
+  email: string;
+  subjects: string;
+};
+
 type TeacherModalProps = {
   open: boolean;
   onClose: () => void;
-  onSubmit: (data: { name: string; email: string; subjects: string }) => void;
+  onSubmit: (data: TeacherFormData, teacherId?: string) => void;
+  isSaving?: boolean;
+  teacherId?: string;
+  initialData?: TeacherFormData;
+  title?: string;
 };
 
-export function TeacherModal({ open, onClose, onSubmit }: TeacherModalProps) {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [subjects, setSubjects] = useState("");
+export function TeacherModal({
+  open,
+  onClose,
+  onSubmit,
+  isSaving = false,
+  teacherId,
+  initialData,
+  title = "Yeni Öğretmen Ekle",
+}: TeacherModalProps) {
+  const [name, setName] = useState(initialData?.name ?? "");
+  const [email, setEmail] = useState(initialData?.email ?? "");
+  const [subjects, setSubjects] = useState(initialData?.subjects ?? "");
 
   if (!open) return null;
 
   const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    onSubmit({ name, email, subjects });
+    onSubmit({ name, email, subjects }, teacherId);
     onClose();
     setName("");
     setEmail("");
@@ -31,7 +49,7 @@ export function TeacherModal({ open, onClose, onSubmit }: TeacherModalProps) {
 
       <div className="relative bg-white rounded-2xl shadow-xl w-full max-w-xl mx-4 p-6">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-gray-900">Yeni Öğretmen Ekle</h2>
+          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
           <button
             type="button"
             className="p-2 text-gray-500 hover:text-gray-700"
@@ -98,9 +116,10 @@ export function TeacherModal({ open, onClose, onSubmit }: TeacherModalProps) {
             </button>
             <button
               type="submit"
-              className="w-full sm:w-auto px-5 py-3 rounded-lg bg-[#2196F3] text-white text-sm font-medium hover:bg-[#1976D2] transition-colors"
+              disabled={isSaving}
+              className="w-full sm:w-auto px-5 py-3 rounded-lg bg-[#2196F3] text-white text-sm font-medium hover:bg-[#1976D2] transition-colors disabled:opacity-60"
             >
-              Kaydet
+              {isSaving ? "Kaydediliyor..." : "Kaydet"}
             </button>
           </div>
         </form>

@@ -1,13 +1,5 @@
 import { Edit3, Trash2, BookOpen, School } from "lucide-react";
-
-export type Teacher = {
-  name: string;
-  email: string;
-  mainSubject: string;
-  lessonCount: number;
-  classCount: number;
-  subjects: string[];
-};
+import type { Teacher } from "@/types/teacher";
 
 type TeacherCardProps = {
   teacher: Teacher;
