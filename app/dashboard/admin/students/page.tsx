@@ -3,10 +3,10 @@
 
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { AdminShell } from "@/components/admin/AdminShell";
-import { SectionHeader } from "@/components/admin/SectionHeader";
-import { StudentModal } from "@/components/admin/StudentModal";
-import { StudentTable, type Student } from "@/components/admin/StudentTable";
+import { AdminShell } from "@/components/admin/shared/AdminShell";
+import { SectionHeader } from "@/components/admin/shared/SectionHeader";
+import { StudentModal } from "@/components/admin/students/StudentModal";
+import { StudentTable, type Student } from "@/components/admin/students/StudentTable";
 
 const mockStudents: Student[] = [
   { name: "Ali Öztürk", email: "ali.ozturk@ogrenci.com", className: "9-A", courseCount: 2 },

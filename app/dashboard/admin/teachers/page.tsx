@@ -4,11 +4,11 @@
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
 import { collection, addDoc, onSnapshot, query, orderBy, updateDoc, deleteDoc, doc } from "firebase/firestore";
-import { AdminShell } from "@/components/admin/AdminShell";
-import { SectionHeader } from "@/components/admin/SectionHeader";
-import { TeacherCard } from "@/components/admin/TeacherCard";
-import { TeacherModal } from "@/components/admin/TeacherModal";
-import { DeleteConfirmModal } from "@/components/admin/DeleteConfirmModal";
+import { AdminShell } from "@/components/admin/shared/AdminShell";
+import { SectionHeader } from "@/components/admin/shared/SectionHeader";
+import { DeleteConfirmModal } from "@/components/admin/shared/DeleteConfirmModal";
+import { TeacherCard } from "@/components/admin/teachers/TeacherCard";
+import { TeacherModal } from "@/components/admin/teachers/TeacherModal";
 import { db } from "@/lib/firebase";
 import type { Teacher } from "@/types/teacher";
 

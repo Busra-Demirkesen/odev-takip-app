@@ -1,10 +1,10 @@
 // app/dashboard/admin/page.tsx
 "use client";
 
-import { AdminShell } from "@/components/admin/AdminShell";
-import { DashboardStats } from "@/components/admin/DashboardStats";
-import { QuickActions } from "@/components/admin/QuickActions";
-import { ActivityList } from "@/components/admin/ActivityList";
+import { AdminShell } from "@/components/admin/shared/AdminShell";
+import { DashboardStats } from "@/components/admin/shared/DashboardStats";
+import { QuickActions } from "@/components/admin/shared/QuickActions";
+import { ActivityList } from "@/components/admin/shared/ActivityList";
 
 export default function AdminDashboardPage() {
   return (

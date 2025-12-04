@@ -44,8 +44,7 @@ export function DeleteConfirmModal({
 
         <h2 className="text-lg font-semibold text-gray-900 mb-2">{title}</h2>
         <p className="text-sm text-gray-700 mb-6">
-          {itemLabel ? <span className="font-semibold">{itemLabel}</span> : null}{" "}
-          {description}
+          {itemLabel ? <span className="font-semibold">{itemLabel}</span> : null} {description}
         </p>
 
         <div className="flex flex-col sm:flex-row sm:justify-end sm:gap-3 gap-3">

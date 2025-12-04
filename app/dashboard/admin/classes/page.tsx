@@ -2,9 +2,9 @@
 "use client";
 
 import { Plus } from "lucide-react";
-import { AdminShell } from "@/components/admin/AdminShell";
-import { SectionHeader } from "@/components/admin/SectionHeader";
-import { ClassCard, type ClassItem } from "@/components/admin/ClassCard";
+import { AdminShell } from "@/components/admin/shared/AdminShell";
+import { SectionHeader } from "@/components/admin/shared/SectionHeader";
+import { ClassCard, type ClassItem } from "@/components/admin/classes/ClassCard";
 
 const classesMock: ClassItem[] = [
   {
