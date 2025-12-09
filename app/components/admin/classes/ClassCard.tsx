@@ -1,17 +1,5 @@
 import { Edit3, Trash2, Users, BookOpen, Plus } from "lucide-react";
-
-type Subject = {
-  name: string;
-  teacher: string;
-};
-
-export type ClassItem = {
-  name: string;
-  gradeLabel: string;
-  studentCount: number;
-  lessonCount: number;
-  subjects: Subject[];
-};
+import type { ClassItem } from "@/types/class";
 
 type ClassCardProps = {
   classItem: ClassItem;
@@ -19,6 +7,8 @@ type ClassCardProps = {
   onDelete?: (classItem: ClassItem) => void;
   onAddLesson?: (classItem: ClassItem) => void;
   onAddStudent?: (classItem: ClassItem) => void;
+  onEditLesson?: (classItem: ClassItem, lessonIndex: number) => void;
+  onDeleteLesson?: (classItem: ClassItem, lessonIndex: number) => void;
 };
 
 export function ClassCard({
@@ -27,6 +17,8 @@ export function ClassCard({
   onDelete,
   onAddLesson,
   onAddStudent,
+  onEditLesson,
+  onDeleteLesson,
 }: ClassCardProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
@@ -78,12 +70,15 @@ export function ClassCard({
               >
                 <div>
                   <p className="text-sm font-semibold text-gray-900">{subject.name}</p>
-                  <p className="text-xs text-gray-600">{subject.teacher}</p>
+                  <p className="text-xs text-gray-600">
+                    {subject.teacher}
+                    {subject.hours ? ` • ${subject.hours} saat` : ""}
+                  </p>
                 </div>
                 <div className="flex items-center gap-2 text-gray-500">
                   <button
                     type="button"
-                    onClick={() => onEdit?.(classItem)}
+                    onClick={() => onEditLesson?.(classItem, idx)}
                     className="p-2 rounded-lg hover:bg-gray-100 transition-colors"
                     aria-label="Düzenle"
                   >
@@ -91,7 +86,7 @@ export function ClassCard({
                   </button>
                   <button
                     type="button"
-                    onClick={() => onDelete?.(classItem)}
+                    onClick={() => onDeleteLesson?.(classItem, idx)}
                     className="p-2 rounded-lg hover:bg-red-50 hover:text-red-500 transition-colors"
                     aria-label="Sil"
                   >

@@ -3,7 +3,19 @@
 
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
-import { addDoc, collection, deleteDoc, doc, onSnapshot, orderBy, query, updateDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { AdminShell } from "@/components/admin/shared/AdminShell";
 import { SectionHeader } from "@/components/admin/shared/SectionHeader";
 import { DeleteConfirmModal } from "@/components/admin/shared/DeleteConfirmModal";
@@ -16,6 +28,7 @@ type StudentForm = { name: string; email: string; className: string };
 
 export default function AdminStudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
+  const [classOptions, setClassOptions] = useState<string[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -41,6 +54,33 @@ export default function AdminStudentsPage() {
     return () => unsub();
   }, []);
 
+  useEffect(() => {
+    const classesRef = collection(db, "classes");
+    const q = query(classesRef, orderBy("name"));
+    const unsub = onSnapshot(q, (snapshot) => {
+      const names = snapshot.docs
+        .map((d) => (d.data() as { name?: string }).name)
+        .filter((name): name is string => Boolean(name));
+      setClassOptions(names);
+    });
+    return () => unsub();
+  }, []);
+
+  const adjustClassStudentCount = async (className: string | undefined, delta: number) => {
+    if (!className) return;
+    try {
+      const classRef = collection(db, "classes");
+      const q = query(classRef, where("name", "==", className), limit(1));
+      const snap = await getDocs(q);
+      if (snap.empty) return;
+      const target = snap.docs[0];
+      const current = (target.data().studentCount as number | undefined) ?? 0;
+      await updateDoc(target.ref, { studentCount: Math.max(0, current + delta) });
+    } catch (err) {
+      console.error("Sinif ogrenci sayisi guncellenemedi", err);
+    }
+  };
+
   const handleSaveStudent = async (data: StudentForm, studentId?: string) => {
     const payload: Omit<Student, "id"> = {
       name: data.name,
@@ -53,8 +93,13 @@ export default function AdminStudentsPage() {
       setIsSaving(true);
       if (studentId) {
         await updateDoc(doc(db, "students", studentId), payload);
+        if (editingStudent?.className && editingStudent.className !== data.className) {
+          await adjustClassStudentCount(editingStudent.className, -1);
+          await adjustClassStudentCount(data.className, 1);
+        }
       } else {
         await addDoc(collection(db, "students"), payload);
+        await adjustClassStudentCount(data.className, 1);
       }
       setIsModalOpen(false);
       setEditingStudent(null);
@@ -70,6 +115,7 @@ export default function AdminStudentsPage() {
     try {
       setIsDeleting(true);
       await deleteDoc(doc(db, "students", pendingDelete.id));
+      await adjustClassStudentCount(pendingDelete.className, -1);
       setPendingDelete(null);
     } catch (err) {
       console.error("Ogrenci silinemedi", err);
@@ -126,6 +172,7 @@ export default function AdminStudentsPage() {
         }
         title={editingStudent ? "Ogrenciyi Duzenle" : "Yeni Ogrenci Ekle"}
         isSaving={isSaving}
+        classOptions={classOptions}
       />
 
       <DeleteConfirmModal

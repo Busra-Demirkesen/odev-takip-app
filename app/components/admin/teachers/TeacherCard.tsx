@@ -5,9 +5,10 @@ type TeacherCardProps = {
   teacher: Teacher;
   onEdit?: (teacher: Teacher) => void;
   onDelete?: (teacher: Teacher) => void;
+  onViewLessons?: (teacher: Teacher) => void;
 };
 
-export function TeacherCard({ teacher, onEdit, onDelete }: TeacherCardProps) {
+export function TeacherCard({ teacher, onEdit, onDelete, onViewLessons }: TeacherCardProps) {
   const initial = teacher.name.charAt(0).toUpperCase();
 
   return (
@@ -70,6 +71,14 @@ export function TeacherCard({ teacher, onEdit, onDelete }: TeacherCardProps) {
           ))}
         </div>
       </div>
+
+      <button
+        type="button"
+        onClick={() => onViewLessons?.(teacher)}
+        className="w-full rounded-xl border border-gray-200 py-2 text-sm font-semibold text-[#2196F3] hover:bg-[#f5f8ff] transition-colors"
+      >
+        Derslerini gör
+      </button>
     </div>
   );
 }

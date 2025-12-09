@@ -2,52 +2,50 @@
 
 import { useEffect, useState, type FormEvent } from "react";
 import { X } from "lucide-react";
+import type { ClassItem } from "@/types/class";
 
-type StudentFormData = { name: string; email: string; className: string };
-
-type StudentModalProps = {
-  open: boolean;
-  onClose: () => void;
-  onSubmit: (data: StudentFormData) => void | Promise<void>;
-  classOptions?: string[];
-  initialData?: StudentFormData;
-  title?: string;
-  isSaving?: boolean;
+type ClassFormData = {
+  name: string;
+  gradeLabel: string;
 };
 
-export function StudentModal({
+type ClassModalProps = {
+  open: boolean;
+  onClose: () => void;
+  onSubmit: (data: ClassFormData, classId?: string) => void | Promise<void>;
+  isSaving?: boolean;
+  classId?: string;
+  initialData?: ClassItem;
+  title?: string;
+};
+
+export function ClassModal({
   open,
   onClose,
   onSubmit,
-  classOptions = [],
-  initialData,
-  title = "Yeni Ogrenci Ekle",
   isSaving = false,
-}: StudentModalProps) {
-  const getDefaultClass = () => initialData?.className || classOptions[0] || "";
-
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [className, setClassName] = useState(getDefaultClass());
+  classId,
+  initialData,
+  title = "Yeni Sinif Ekle",
+}: ClassModalProps) {
+  const [name, setName] = useState(initialData?.name ?? "");
+  const [gradeLabel, setGradeLabel] = useState(initialData?.gradeLabel ?? "");
 
   useEffect(() => {
     if (initialData) {
       setName(initialData.name);
-      setEmail(initialData.email);
-      setClassName(initialData.className);
+      setGradeLabel(initialData.gradeLabel);
     } else {
       setName("");
-      setEmail("");
-      setClassName(classOptions[0] || "");
+      setGradeLabel("");
     }
-  }, [initialData, classOptions]);
+  }, [initialData, open]);
 
   if (!open) return null;
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!className) return;
-    await onSubmit({ name, email, className });
+    await onSubmit({ name, gradeLabel }, classId);
   };
 
   return (
@@ -69,63 +67,33 @@ export function StudentModal({
 
         <form className="space-y-4" onSubmit={handleSubmit}>
           <div className="space-y-2">
-            <label className="text-sm text-gray-700" htmlFor="student-name">
-              Ogrenci Adi
+            <label className="text-sm text-gray-700" htmlFor="class-name">
+              Sinif adi
             </label>
             <input
-              id="student-name"
+              id="class-name"
               type="text"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="Orn: Ayse Kaya"
+              placeholder="Orn: 9-A"
               className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#2196F3] focus:border-transparent"
               required
             />
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm text-gray-700" htmlFor="student-email">
-              E-posta
+            <label className="text-sm text-gray-700" htmlFor="class-grade">
+              Seviye
             </label>
             <input
-              id="student-email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="ayse.kaya@ogrenci.com"
+              id="class-grade"
+              type="text"
+              value={gradeLabel}
+              onChange={(e) => setGradeLabel(e.target.value)}
+              placeholder="Orn: 9. Sinif"
               className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#2196F3] focus:border-transparent"
               required
             />
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-sm text-gray-700" htmlFor="student-class">
-              Sinif
-            </label>
-            <select
-              id="student-class"
-              value={className}
-              onChange={(e) => setClassName(e.target.value)}
-              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#2196F3] focus:border-transparent bg-white"
-              required
-              disabled={!classOptions.length}
-            >
-              {(() => {
-                const options = classOptions.includes(className)
-                  ? classOptions
-                  : className
-                  ? [className, ...classOptions]
-                  : classOptions;
-                if (!options.length) {
-                  return <option value="">Sinif bulunamadı</option>;
-                }
-                return options.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
-                  </option>
-                ));
-              })()}
-            </select>
           </div>
 
           <div className="flex flex-col sm:flex-row sm:justify-end sm:gap-3 gap-3 pt-2">
