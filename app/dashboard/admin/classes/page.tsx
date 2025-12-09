@@ -35,6 +35,8 @@ export default function AdminClassesPage() {
   const [editingLessonIndex, setEditingLessonIndex] = useState<number | null>(null);
   const [pendingDelete, setPendingDelete] = useState<ClassItem | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [pendingLessonDelete, setPendingLessonDelete] = useState<{ classItem: ClassItem; index: number } | null>(null);
+  const [isDeletingLesson, setIsDeletingLesson] = useState(false);
   const [teacherOptions, setTeacherOptions] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
@@ -170,13 +172,18 @@ export default function AdminClassesPage() {
     }
   };
 
-  const handleDeleteLesson = async (classItem: ClassItem, lessonIndex: number) => {
-    if (!classItem.id) return;
+  const handleDeleteLesson = async () => {
+    if (!pendingLessonDelete?.classItem.id) return;
+    const { classItem, index } = pendingLessonDelete;
     const subjects = Array.isArray(classItem.subjects) ? [...classItem.subjects] : [];
-    const target = subjects[lessonIndex];
-    if (!target) return;
-    subjects.splice(lessonIndex, 1);
+    const target = subjects[index];
+    if (!target) {
+      setPendingLessonDelete(null);
+      return;
+    }
+    subjects.splice(index, 1);
     try {
+      setIsDeletingLesson(true);
       await updateDoc(doc(db, "classes", classItem.id), {
         subjects,
         lessonCount: subjects.length,
@@ -184,8 +191,11 @@ export default function AdminClassesPage() {
       if (target.teacherId) {
         await updateDoc(doc(db, "teachers", target.teacherId), { lessonCount: increment(-1) });
       }
+      setPendingLessonDelete(null);
     } catch (err) {
       console.error("Ders silinemedi", err);
+    } finally {
+      setIsDeletingLesson(false);
     }
   };
 
@@ -234,7 +244,7 @@ export default function AdminClassesPage() {
               setIsLessonModalOpen(true);
             }}
             onDeleteLesson={(c, idx) => {
-              handleDeleteLesson(c, idx);
+              setPendingLessonDelete({ classItem: c, index: idx });
             }}
           />
         ))}
@@ -285,6 +295,20 @@ export default function AdminClassesPage() {
         itemLabel={pendingDelete?.name}
         title="Silme Onayi"
         description="Bu sinifi silmek istediginizden emin misiniz? Bu islem geri alinamaz."
+      />
+
+      <DeleteConfirmModal
+        open={Boolean(pendingLessonDelete)}
+        onCancel={() => setPendingLessonDelete(null)}
+        onConfirm={handleDeleteLesson}
+        isDeleting={isDeletingLesson}
+        itemLabel={
+          pendingLessonDelete && pendingLessonDelete.classItem.subjects[pendingLessonDelete.index]
+            ? pendingLessonDelete.classItem.subjects[pendingLessonDelete.index].name
+            : undefined
+        }
+        title="Dersi Sil"
+        description="Bu dersi silmek istiyor musunuz? Bu islem geri alinamaz."
       />
     </AdminShell>
   );
