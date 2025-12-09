@@ -1,11 +1,5 @@
 import { Edit3, Trash2 } from "lucide-react";
-
-export type Student = {
-  name: string;
-  email: string;
-  className: string;
-  courseCount: number;
-};
+import type { Student } from "@/types/student";
 
 type StudentTableProps = {
   students: Student[];
@@ -19,17 +13,17 @@ export function StudentTable({ students, onEdit, onDelete }: StudentTableProps) 
       <div className="overflow-x-auto">
         <div className="min-w-[720px]">
           <div className="grid grid-cols-[2.2fr,2.2fr,1fr,1fr,1fr] px-6 py-3 text-sm font-semibold text-gray-600 border-b border-gray-100">
-            <div>Öğrenci Adı</div>
+            <div>Ogrenci Adi</div>
             <div>E-posta</div>
-            <div>Sınıf</div>
-            <div>Ders Sayısı</div>
-            <div className="text-right pr-2">İşlemler</div>
+            <div>Sinif</div>
+            <div>Ders Sayisi</div>
+            <div className="text-right pr-2">Islemler</div>
           </div>
 
           <div className="divide-y divide-gray-100">
             {students.map((student) => (
               <div
-                key={student.email}
+                key={student.id ?? student.email}
                 className="grid grid-cols-[2.2fr,2.2fr,1fr,1fr,1fr] items-center px-6 py-4 text-sm text-gray-800"
               >
                 <div className="flex items-center gap-3">
@@ -50,7 +44,7 @@ export function StudentTable({ students, onEdit, onDelete }: StudentTableProps) 
                     type="button"
                     onClick={() => onEdit?.(student)}
                     className="p-2 rounded-lg hover:bg-gray-100 hover:text-[#2196F3] transition-colors"
-                    aria-label="Düzenle"
+                    aria-label="Duzenle"
                   >
                     <Edit3 size={18} />
                   </button>
