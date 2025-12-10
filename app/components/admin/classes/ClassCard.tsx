@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import { Edit3, Trash2, Users, BookOpen, Plus } from "lucide-react";
 import type { ClassItem } from "@/types/class";
 
@@ -20,6 +23,11 @@ export function ClassCard({
   onEditLesson,
   onDeleteLesson,
 }: ClassCardProps) {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const MAX_VISIBLE_LESSONS = 3;
+  const visibleSubjects = isExpanded ? classItem.subjects : classItem.subjects.slice(0, MAX_VISIBLE_LESSONS);
+  const remainingCount = Math.max(0, classItem.subjects.length - visibleSubjects.length);
+
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden flex flex-col">
       <div className="bg-[#0d8af0] text-white px-5 py-4">
@@ -63,7 +71,7 @@ export function ClassCard({
         <div>
           <p className="text-sm font-semibold text-gray-900 mb-3">Dersler</p>
           <div className="space-y-3">
-            {classItem.subjects.map((subject, idx) => (
+            {visibleSubjects.map((subject, idx) => (
               <div
                 key={`${subject.name}-${idx}`}
                 className="rounded-xl border border-gray-100 bg-gray-50 px-4 py-3 flex items-center justify-between"
@@ -96,6 +104,15 @@ export function ClassCard({
               </div>
             ))}
           </div>
+          {classItem.subjects.length > MAX_VISIBLE_LESSONS ? (
+            <button
+              type="button"
+              onClick={() => setIsExpanded((prev) => !prev)}
+              className="mt-3 text-xs font-semibold text-[#0d8af0] hover:text-[#0c79d2] transition-colors"
+            >
+              {isExpanded ? "Daha az goster" : `Tumunu goster (${remainingCount} fazlası)`}
+            </button>
+          ) : null}
         </div>
 
         <div className="flex flex-col sm:flex-row gap-3 mt-auto">

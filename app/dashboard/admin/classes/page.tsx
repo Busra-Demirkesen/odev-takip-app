@@ -3,15 +3,30 @@
 
 import { useEffect, useState } from "react";
 import { Plus } from "lucide-react";
-import { addDoc, collection, deleteDoc, doc, increment, onSnapshot, orderBy, query, updateDoc } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  increment,
+  limit,
+  onSnapshot,
+  orderBy,
+  query,
+  updateDoc,
+  where,
+} from "firebase/firestore";
 import { AdminShell } from "@/components/admin/shared/AdminShell";
 import { SectionHeader } from "@/components/admin/shared/SectionHeader";
 import { DeleteConfirmModal } from "@/components/admin/shared/DeleteConfirmModal";
 import { ClassCard } from "@/components/admin/classes/ClassCard";
 import { ClassModal } from "@/components/admin/classes/ClassModal";
 import { LessonModal } from "@/components/admin/classes/LessonModal";
+import { StudentModal } from "@/components/admin/students/StudentModal";
 import { db } from "@/lib/firebase";
 import type { ClassItem } from "@/types/class";
+import type { Student } from "@/types/student";
 
 type ClassForm = {
   name: string;
@@ -23,6 +38,8 @@ type LessonForm = {
   teacherId: string;
   hours: number;
 };
+
+type StudentForm = { name: string; email: string; className: string };
 
 export default function AdminClassesPage() {
   const [classes, setClasses] = useState<ClassItem[]>([]);
@@ -38,6 +55,11 @@ export default function AdminClassesPage() {
   const [pendingLessonDelete, setPendingLessonDelete] = useState<{ classItem: ClassItem; index: number } | null>(null);
   const [isDeletingLesson, setIsDeletingLesson] = useState(false);
   const [teacherOptions, setTeacherOptions] = useState<{ id: string; name: string }[]>([]);
+  const [isStudentModalOpen, setIsStudentModalOpen] = useState(false);
+  const [selectedClassName, setSelectedClassName] = useState("");
+  const [isSavingStudent, setIsSavingStudent] = useState(false);
+
+  const classOptions = classes.map((c) => c.name).filter(Boolean);
 
   useEffect(() => {
     const classesRef = collection(db, "classes");
@@ -74,6 +96,21 @@ export default function AdminClassesPage() {
     });
     return () => unsub();
   }, []);
+
+  const adjustClassStudentCount = async (className: string | undefined, delta: number) => {
+    if (!className) return;
+    try {
+      const classRef = collection(db, "classes");
+      const q = query(classRef, where("name", "==", className), limit(1));
+      const snap = await getDocs(q);
+      if (snap.empty) return;
+      const target = snap.docs[0];
+      const current = (target.data().studentCount as number | undefined) ?? 0;
+      await updateDoc(target.ref, { studentCount: Math.max(0, current + delta) });
+    } catch (err) {
+      console.error("Sinif ogrenci sayisi guncellenemedi", err);
+    }
+  };
 
   const handleSaveClass = async (data: ClassForm, classId?: string) => {
     const payload: Omit<ClassItem, "id"> = {
@@ -199,6 +236,27 @@ export default function AdminClassesPage() {
     }
   };
 
+  const handleSaveStudent = async (data: StudentForm) => {
+    const payload: Omit<Student, "id"> = {
+      name: data.name,
+      email: data.email,
+      className: data.className,
+      courseCount: 0,
+    };
+
+    try {
+      setIsSavingStudent(true);
+      await addDoc(collection(db, "students"), payload);
+      await adjustClassStudentCount(data.className, 1);
+      setIsStudentModalOpen(false);
+      setSelectedClassName("");
+    } catch (err) {
+      console.error("Ogrenci eklenemedi", err);
+    } finally {
+      setIsSavingStudent(false);
+    }
+  };
+
   return (
     <AdminShell activeSection="classes">
       <SectionHeader
@@ -235,8 +293,8 @@ export default function AdminClassesPage() {
               setIsLessonModalOpen(true);
             }}
             onAddStudent={(c) => {
-              setEditingClass(c);
-              setIsModalOpen(true);
+              setSelectedClassName(c.name);
+              setIsStudentModalOpen(true);
             }}
             onEditLesson={(c, idx) => {
               setLessonTargetClass(c);
@@ -285,6 +343,27 @@ export default function AdminClassesPage() {
         }
         title={editingLessonIndex !== null ? "Dersi Düzenle" : "Ders Ekle"}
         submitLabel={editingLessonIndex !== null ? "Güncelle" : undefined}
+      />
+
+      <StudentModal
+        open={isStudentModalOpen}
+        onClose={() => {
+          setIsStudentModalOpen(false);
+          setSelectedClassName("");
+        }}
+        onSubmit={handleSaveStudent}
+        classOptions={classOptions}
+        initialData={
+          selectedClassName
+            ? {
+                name: "",
+                email: "",
+                className: selectedClassName,
+              }
+            : undefined
+        }
+        title="Yeni Ogrenci Ekle"
+        isSaving={isSavingStudent}
       />
 
       <DeleteConfirmModal
