@@ -236,13 +236,16 @@ export default function AdminClassesPage() {
     }
   };
 
-  const handleSaveStudent = async (data: StudentForm) => {
+const handleSaveStudent = async (data: StudentForm) => {
+    const classInfo = classes.find((c) => c.name === data.className);
+    const courseCount = classInfo ? classInfo.subjects.length || classInfo.lessonCount || 0 : 0;
+
     const payload: Omit<Student, "id"> = {
       name: data.name,
       email: data.email,
       className: data.className,
       studentNumber: data.studentNumber,
-      courseCount: 0,
+      courseCount,
     };
 
     try {

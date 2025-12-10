@@ -23,12 +23,14 @@ import { StudentModal } from "@/components/admin/students/StudentModal";
 import { StudentTable } from "@/components/admin/students/StudentTable";
 import { db } from "@/lib/firebase";
 import type { Student } from "@/types/student";
+import type { ClassItem } from "@/types/class";
 
 type StudentForm = { name: string; email: string; className: string; studentNumber?: string };
 
 export default function AdminStudentsPage() {
   const [students, setStudents] = useState<Student[]>([]);
   const [classOptions, setClassOptions] = useState<string[]>([]);
+  const [classes, setClasses] = useState<ClassItem[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingStudent, setEditingStudent] = useState<Student | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -61,10 +63,20 @@ export default function AdminStudentsPage() {
     const classesRef = collection(db, "classes");
     const q = query(classesRef, orderBy("name"));
     const unsub = onSnapshot(q, (snapshot) => {
-      const names = snapshot.docs
-        .map((d) => (d.data() as { name?: string }).name)
-        .filter((name): name is string => Boolean(name));
-      setClassOptions(names);
+      const data: ClassItem[] = snapshot.docs.map((d) => {
+        const docData = d.data() as Omit<ClassItem, "id">;
+        const subjects = Array.isArray(docData.subjects) ? docData.subjects : [];
+        return {
+          id: d.id,
+          name: docData.name ?? "",
+          gradeLabel: docData.gradeLabel ?? "",
+          studentCount: docData.studentCount ?? 0,
+          lessonCount: docData.lessonCount ?? subjects.length,
+          subjects,
+        };
+      });
+      setClasses(data);
+      setClassOptions(data.map((cls) => cls.name).filter(Boolean));
     });
     return () => unsub();
   }, []);
@@ -85,12 +97,15 @@ export default function AdminStudentsPage() {
   };
 
   const handleSaveStudent = async (data: StudentForm, studentId?: string) => {
+    const classInfo = classes.find((c) => c.name === data.className);
+    const courseCount = classInfo ? classInfo.subjects.length || classInfo.lessonCount || 0 : 0;
+
     const payload: Omit<Student, "id"> = {
       name: data.name,
       email: data.email,
       className: data.className,
       studentNumber: data.studentNumber,
-      courseCount: editingStudent?.courseCount ?? 0,
+      courseCount,
     };
 
     try {
@@ -146,6 +161,12 @@ export default function AdminStudentsPage() {
     return fields.some((field) => field.includes(searchQuery));
   });
 
+  const studentsWithCourseCount = filteredStudents.map((student) => {
+    const classInfo = classes.find((c) => c.name === student.className);
+    const courseCount = classInfo ? classInfo.subjects.length || classInfo.lessonCount || 0 : student.courseCount;
+    return { ...student, courseCount };
+  });
+
   return (
     <AdminShell activeSection="students">
       <SectionHeader
@@ -192,7 +213,7 @@ export default function AdminStudentsPage() {
       />
 
       <StudentTable
-        students={filteredStudents}
+        students={studentsWithCourseCount}
         onEdit={(student) => {
           setEditingStudent(student);
           setIsModalOpen(true);

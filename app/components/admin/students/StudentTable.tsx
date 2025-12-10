@@ -32,7 +32,7 @@ export function StudentTable({ students, onEdit, onDelete }: StudentTableProps) 
             <div>Sınıf</div>
             <div>Ad-Soyad</div>
             <div>Okul No</div>
-            <div>Aldığı ders saati</div>
+            <div>Aldığı ders sayisi</div>
             <div className="text-right pr-2">İşlemler</div>
           </div>
 
@@ -75,3 +75,5 @@ export function StudentTable({ students, onEdit, onDelete }: StudentTableProps) 
     </div>
   );
 }
+
+
