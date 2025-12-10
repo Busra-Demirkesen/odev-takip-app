@@ -2,7 +2,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
 import { collection, addDoc, onSnapshot, query, orderBy, updateDoc, deleteDoc, doc } from "firebase/firestore";
 import { AdminShell } from "@/components/admin/shared/AdminShell";
 import { SectionHeader } from "@/components/admin/shared/SectionHeader";
@@ -26,6 +26,8 @@ export default function AdminTeachersPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
   const [isLessonsModalOpen, setIsLessonsModalOpen] = useState(false);
+  const [searchInput, setSearchInput] = useState("");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     const teachersRef = collection(db, "teachers");
@@ -136,28 +138,71 @@ export default function AdminTeachersPage() {
     }
   };
 
+  const applySearch = () => {
+    setSearchQuery(searchInput.trim().toLowerCase());
+  };
+
+  const filteredTeachers = teachersWithStats.filter((teacher) => {
+    if (!searchQuery) return true;
+    const fields = [
+      teacher.name,
+      teacher.email,
+      teacher.mainSubject,
+      ...(teacher.subjects ?? []),
+    ]
+      .map((field) => field?.toLowerCase?.() ?? "")
+      .filter(Boolean);
+
+    return fields.some((field) => field.includes(searchQuery));
+  });
+
   return (
     <AdminShell activeSection="teachers">
       <SectionHeader
         title="Ogretmen Yonetimi"
         subtitle="Ogretmenleri goruntule ve yonet"
         action={
-          <button
-            type="button"
-            onClick={() => {
-              setEditingTeacher(null);
-              setIsModalOpen(true);
-            }}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2196F3] text-white text-sm font-medium hover:bg-[#1976D2] transition-colors"
-          >
-            <Plus size={18} />
-            Ogretmen Ekle
-          </button>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2 w-full sm:w-auto">
+            <div className="flex items-center gap-2 w-full sm:w-64 bg-white border border-gray-300 rounded-xl px-3 py-2 shadow-sm">
+              <Search size={16} className="text-gray-500" />
+              <input
+                type="text"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    e.preventDefault();
+                    applySearch();
+                  }
+                }}
+                placeholder="Ogretmen ara..."
+                className="flex-1 text-sm text-gray-900 placeholder:text-gray-500 bg-transparent outline-none"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={applySearch}
+              className="inline-flex items-center justify-center gap-2 px-4 py-2 rounded-xl bg-gray-100 text-gray-800 text-sm font-medium hover:bg-gray-200 transition-colors"
+            >
+              Ara
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setEditingTeacher(null);
+                setIsModalOpen(true);
+              }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-[#2196F3] text-white text-sm font-medium hover:bg-[#1976D2] transition-colors"
+            >
+              <Plus size={18} />
+              Ogretmen Ekle
+            </button>
+          </div>
         }
       />
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-        {teachersWithStats.map((teacher) => (
+        {filteredTeachers.map((teacher) => (
           <TeacherCard
             key={teacher.id ?? teacher.email}
             teacher={teacher}

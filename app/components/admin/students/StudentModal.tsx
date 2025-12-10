@@ -3,7 +3,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { X } from "lucide-react";
 
-type StudentFormData = { name: string; email: string; className: string };
+type StudentFormData = { name: string; email: string; className: string; studentNumber?: string };
 
 type StudentModalProps = {
   open: boolean;
@@ -29,16 +29,19 @@ export function StudentModal({
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [className, setClassName] = useState(getDefaultClass());
+  const [studentNumber, setStudentNumber] = useState("");
 
   useEffect(() => {
     if (initialData) {
       setName(initialData.name);
       setEmail(initialData.email);
       setClassName(initialData.className);
+      setStudentNumber(initialData.studentNumber ?? "");
     } else {
       setName("");
       setEmail("");
       setClassName(classOptions[0] || "");
+      setStudentNumber("");
     }
   }, [initialData, classOptions]);
 
@@ -47,7 +50,7 @@ export function StudentModal({
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!className) return;
-    await onSubmit({ name, email, className });
+    await onSubmit({ name, email, className, studentNumber: studentNumber.trim() || undefined });
   };
 
   return (
@@ -95,6 +98,22 @@ export function StudentModal({
               placeholder="ayse.kaya@ogrenci.com"
               className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#2196F3] focus:border-transparent"
               required
+            />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm text-gray-700" htmlFor="student-number">
+              Okul No
+            </label>
+            <input
+              id="student-number"
+              type="text"
+              value={studentNumber}
+              onChange={(e) => setStudentNumber(e.target.value)}
+              placeholder="Orn: 12345"
+              className="w-full rounded-lg border border-gray-300 px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[#2196F3] focus:border-transparent"
+              inputMode="numeric"
+              pattern="[0-9]*"
             />
           </div>
 

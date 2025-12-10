@@ -39,7 +39,7 @@ type LessonForm = {
   hours: number;
 };
 
-type StudentForm = { name: string; email: string; className: string };
+type StudentForm = { name: string; email: string; className: string; studentNumber?: string };
 
 export default function AdminClassesPage() {
   const [classes, setClasses] = useState<ClassItem[]>([]);
@@ -241,6 +241,7 @@ export default function AdminClassesPage() {
       name: data.name,
       email: data.email,
       className: data.className,
+      studentNumber: data.studentNumber,
       courseCount: 0,
     };
 
@@ -359,6 +360,7 @@ export default function AdminClassesPage() {
                 name: "",
                 email: "",
                 className: selectedClassName,
+                studentNumber: "",
               }
             : undefined
         }

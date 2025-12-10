@@ -3,5 +3,6 @@ export type Student = {
   name: string;
   email: string;
   className: string;
+  studentNumber?: string;
   courseCount: number;
 };
