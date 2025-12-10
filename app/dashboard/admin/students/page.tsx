@@ -45,13 +45,15 @@ export default function AdminStudentsPage() {
     const unsub = onSnapshot(q, (snapshot) => {
       const data: Student[] = snapshot.docs.map((d) => {
         const docData = d.data() as Omit<Student, "id">;
+        const courses = Array.isArray(docData.courses) ? docData.courses : [];
         return {
           id: d.id,
           name: docData.name,
           email: docData.email,
           className: docData.className,
           studentNumber: docData.studentNumber,
-          courseCount: docData.courseCount ?? 0,
+          courses,
+          courseCount: docData.courseCount ?? courses.length ?? 0,
         };
       });
       setStudents(data);
@@ -98,13 +100,15 @@ export default function AdminStudentsPage() {
 
   const handleSaveStudent = async (data: StudentForm, studentId?: string) => {
     const classInfo = classes.find((c) => c.name === data.className);
-    const courseCount = classInfo ? classInfo.subjects.length || classInfo.lessonCount || 0 : 0;
+    const courseList = classInfo ? classInfo.subjects : [];
+    const courseCount = courseList.length || classInfo?.lessonCount || 0;
 
     const payload: Omit<Student, "id"> = {
       name: data.name,
       email: data.email,
       className: data.className,
       studentNumber: data.studentNumber,
+      courses: courseList,
       courseCount,
     };
 
@@ -163,8 +167,11 @@ export default function AdminStudentsPage() {
 
   const studentsWithCourseCount = filteredStudents.map((student) => {
     const classInfo = classes.find((c) => c.name === student.className);
-    const courseCount = classInfo ? classInfo.subjects.length || classInfo.lessonCount || 0 : student.courseCount;
-    return { ...student, courseCount };
+    const courseCount = classInfo
+      ? classInfo.subjects.length || classInfo.lessonCount || 0
+      : student.courses?.length || student.courseCount;
+    const courses = classInfo ? classInfo.subjects : student.courses;
+    return { ...student, courseCount, courses };
   });
 
   return (
